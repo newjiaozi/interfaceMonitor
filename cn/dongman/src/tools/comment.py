@@ -5,6 +5,7 @@ from cn.dongman.src.tools.logger import logger
 from cn.dongman.src.tools.login import Config
 from cn.dongman.src.tools.interface import getExpiresMd5,appEpisodeInfoV3,appTitleInfo2,deleteRedis
 from cn.dongman.src.tools.login import login,getConfig
+from cn.dongman.src.tools.handleSqlite import getConfig as gc
 
 ### 发表评论
 def v1Comment(titleNo,episodeNo,categoryImage="",categoryId="",imageNo="",text="",userType=""):
@@ -125,9 +126,8 @@ def appCommentTitleepisodeinfo2(telist):
 def checkV1CommentData(data,cKeys):
     if data:
         data_keys = list(data.keys())
-        # logger.info(data_keys)
+        logger.info(data_keys)
         for i in cKeys:
-            # logger.info(i)
             assert i in data_keys
 
 def cutomizeV1Comment(titleNo,episodeNo,categoryImage="",categoryId="",imageNo="",text="",userType=""):
@@ -136,14 +136,14 @@ def cutomizeV1Comment(titleNo,episodeNo,categoryImage="",categoryId="",imageNo="
         checkV1CommentData(resp["data"],
                            ['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime',
                             'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'objectId',
-                            'originalContents', 'commentType', 'deleteDescription', 'secret', 'extra_status', 'clientType',
-                            'extra_content_spam_status', 'ip', '__v'])
+                            'originalContents', 'commentType', 'deleteDescription', 'secret', 'extra_status',
+                              '__v'])
         id = resp["data"]["_id"]
         return id
 
     elif resp["code"] == 10005:
         logger.info("评论次数限制 ：%s" % resp["message"])
-        deleteRedis(getConfig("session","neo_id","session.ini"))
+        deleteRedis(gc("neo_id"))
         return cutomizeV1Comment(titleNo, episodeNo, categoryImage, categoryId, imageNo, text, userType)
 
     elif resp["code"] == 10002:
@@ -158,13 +158,13 @@ def customizeV1CommentReply(parentId,titleNo,episodeNo,text=""):
         checkV1CommentData(replyResp['data'],
                            ['_id', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount',
                             'unLikeCount', 'visible', 'objectId', 'originalContents', 'commentType',
-                            'deleteDescription', 'secret', 'extra_status', 'clientType', 'extra_content_spam_status',
-                            'ip', 'titleNo', 'episodeNo', 'imageNo', '__v'])
+                            'deleteDescription', 'secret', 'extra_status', 
+                             'titleNo', 'episodeNo', 'imageNo', '__v'])
         id = replyResp["data"]["_id"]
         return id
     elif replyResp["code"] == 10005:
         logger.info("评论次数限制 ：%s" % replyResp["message"])
-        deleteRedis(getConfig("session","neo_id","session.ini"))
+        deleteRedis(gc("neo_id"))
         return customizeV1CommentReply(parentId,titleNo,episodeNo,text=text)
 
     elif replyResp["code"] == 10002:
@@ -299,12 +299,12 @@ def deleteAllComments():
             if comment["type"] == 1:
                 checkV1CommentData(comment,["_id","titleNo","episodeNo","contents","createTime","modifyTime","replyCount","likeCount",
                                             "unLikeCount","visible","objectId","commentType","deleteDescription","secret",
-                                            "extra_status","clientType","extra_content_spam_status","ip","type"])
+                                            "extra_status","extra_content_spam_status","ip","type"])
                 deleteComment(comment["_id"])
             elif comment["type"] == 2:
                 checkV1CommentData(comment,["_id","titleNo","episodeNo","contents","createTime","modifyTime","parentId","likeCount",
                                             "unLikeCount","visible","objectId","commentType","deleteDescription","secret",
-                                            "extra_status","clientType","extra_content_spam_status","ip","type"])
+                                            "extra_status","extra_content_spam_status","ip","type"])
                 deleteCommentReply(comment["_id"])
 
 
@@ -382,7 +382,7 @@ def checkV1CommentGet(commentId,pageNo=1,limit=10):
                 commentList.extend(res["data"]["commentReplyList"])
         for i in commentList:
             # logger.info(i)
-            checkV1CommentData(i,['_id', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status', 'clientType', 'extra_content_spam_status', 'ip', 'titleNo', 'episodeNo', 'imageNo', '__v', 'userName', 'userCertType', 'like'])
+            checkV1CommentData(i,['_id', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status',   'titleNo', 'episodeNo', 'imageNo','userName', 'userCertType', 'like'])
     logger.info("checkV1CommentGet")
 
 ##v2comment翻页check
@@ -399,9 +399,7 @@ def checkV2Comment(titleNo,episodeNo,imageNo="",pageNo=1,sortBy="",limit=20):
         for i in commentList:
             checkV1CommentData(i, ['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime',
                                    'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid',
-                                   'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status',
-                                   'clientType', 'extra_content_spam_status', 'ip', '__v', 'best', 'commentReplyList',
-                                   'like', 'userName', 'userCertType'])
+                                   'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status', 'best', 'commentReplyList','like', 'userName', 'userCertType'])
     logger.info("checkV2Comment")
 
 
@@ -410,14 +408,14 @@ def checkV2CommentJson(res):
     checkV1CommentData(res,['code', 'data', 'message'])
     checkV1CommentData(res['data'],['hide', 'bestList', 'commentList', 'count', 'showTotalCount'])
     for i in res['data']["commentList"]:
-        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret','extra_status','clientType','extra_content_spam_status', 'ip','__v', 'best', 'commentReplyList', 'like', 'userName', 'userCertType'])
+        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret','extra_status', 'best', 'commentReplyList', 'like', 'userName', 'userCertType'])
         for j in i["commentReplyList"]:
-            checkV1CommentData(j,['_id', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'objectId', 'originalContents', 'commentType', 'deleteDescription', 'secret', 'extra_status', 'clientType', 'extra_content_spam_status', 'ip', 'titleNo', 'episodeNo', 'imageNo', '__v', 'like', 'userName', 'userCertType'])
+            checkV1CommentData(j,['_id', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'objectId', 'originalContents', 'commentType', 'deleteDescription', 'secret', 'extra_status',   'titleNo', 'episodeNo', 'imageNo', 'like', 'userName', 'userCertType'])
 
     for i in res['data']["bestList"]:
-        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'userType', 'objectId', 'commentNo', 'commentType', 'deleteDescription', 'secret', '__v', 'best', 'commentReplyList', 'like', 'userName', 'userCertType'])
+        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'userType', 'objectId', 'commentNo', 'commentType', 'deleteDescription', 'secret', 'best', 'commentReplyList', 'like', 'userName', 'userCertType'])
         for j in i["commentReplyList"]:
-            checkV1CommentData(j,['_id', 'titleNo', 'episodeNo', 'imageNo', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'userType', 'objectId', 'commentNo', 'originalContents', 'commentType', 'deleteDescription', 'secret', '__v', 'like', 'userName', 'userCertType'])
+            checkV1CommentData(j,['_id', 'titleNo', 'episodeNo', 'imageNo', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'userType', 'objectId', 'commentNo', 'originalContents', 'commentType', 'deleteDescription', 'secret', 'like', 'userName', 'userCertType'])
     logger.info("checkV2CommentJson")
 
 def checkV1CommentDetailJson(res):
@@ -426,11 +424,11 @@ def checkV1CommentDetailJson(res):
     checkV1CommentData(res["data"],['hide', 'comment'])
     checkV1CommentData(res["data"]["comment"],['commentList', 'pageModel'])
     for i in res["data"]["comment"]["commentList"]:
-        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status', 'extra_content_spam_status', 'ip', '__v', 'best', 'replyCommentList', 'userName', 'userCertType'])
+        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status',   'best', 'replyCommentList', 'userName', 'userCertType'])
     checkV1CommentData(res["data"]["comment"]['pageModel'],['page', 'pageSize', 'startRow', 'endRow', 'totalRows', 'showTotalCount', 'totalPages', 'prevPage', 'nextPage'])
     if res["data"]["comment"].get("bestList",None):
         for i in res["data"]["comment"]['bestList']:
-            checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'userType', 'objectId', 'commentNo', 'commentType', 'deleteDescription', 'secret', '__v', 'best', 'replyCommentList', 'userName', 'userCertType'])
+            checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'userType', 'objectId', 'commentNo', 'commentType', 'deleteDescription', 'secret', 'best', 'replyCommentList', 'userName', 'userCertType'])
 
     logger.info("checkV1CommentDetailJson")
 
@@ -440,15 +438,15 @@ def checkV1ReplyCommentDetailJson(res):
     checkV1CommentData(res["data"],['hide', 'comment'])
     checkV1CommentData(res["data"]["comment"],['commentList', 'pageModel'])
     for i in res["data"]["comment"]["commentList"]:
-        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status', 'extra_content_spam_status', 'ip', '__v', 'best', 'replyCommentList', 'userName', 'userCertType'])
+        checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'objectId', 'commentType', 'deleteDescription', 'secret', 'extra_status',   'best', 'replyCommentList', 'userName', 'userCertType'])
     checkV1CommentData(res["data"]["comment"]['pageModel'],['page', 'pageSize', 'startRow', 'endRow', 'totalRows', 'showTotalCount', 'totalPages', 'prevPage', 'nextPage'])
 
     if res["data"]["comment"].get("bestList",None):
         for i in res["data"]["comment"]['bestList']:
-            checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'userType', 'objectId', 'commentNo', 'commentType', 'deleteDescription', 'secret', '__v', 'best', 'replyCommentList', 'userName', 'userCertType'])
+            checkV1CommentData(i,['_id', 'titleNo', 'episodeNo', 'categoryId', 'imageNo', 'contents', 'createTime', 'modifyTime', 'replyCount', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'forbid', 'visible', 'userType', 'objectId', 'commentNo', 'commentType', 'deleteDescription', 'secret', 'best', 'replyCommentList', 'userName', 'userCertType'])
 
     for i in res["data"]["replyComment"]["commentReplyList"]:
-        checkV1CommentData(i,['_id', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'objectId', 'originalContents', 'commentType', 'deleteDescription', 'secret', 'extra_status', 'clientType', 'extra_content_spam_status', 'ip', 'titleNo', 'episodeNo', 'imageNo', '__v', 'userName', 'userCertType'])
+        checkV1CommentData(i,['_id', 'parentId', 'contents', 'createTime', 'modifyTime', 'neoId', 'deleted', 'likeCount', 'unLikeCount', 'visible', 'objectId', 'originalContents', 'commentType', 'deleteDescription', 'secret', 'extra_status',  'titleNo', 'episodeNo', 'imageNo', 'userName', 'userCertType'])
     checkV1CommentData(res["data"]["replyComment"]['pageModel'],['page', 'pageSize', 'startRow', 'endRow', 'totalRows', 'showTotalCount', 'totalPages', 'prevPage', 'nextPage'])
 
 
@@ -456,17 +454,16 @@ def checkV1ReplyCommentDetailJson(res):
 
 
 
-def getParentsId(titleNos):
+def getParentsId(titleNo):
     parentids = {} ##{"neo_id":{"parentidA":["id3","id4"]},""parentidB":["id1","id2']}
     cdnHost = "https://cdn.dongmanmanhua.cn"
-    login(Config("mobile"),Config("passwd"),loginType="PHONE_NUMBER")
     deleteAllComments()
     datas=[]
-    for titleNo in titleNos:
-        logger.info("#####：%s" % titleNo)
-        resp = appTitleInfo2(titleNo)
-        if resp:
-            datas.append(resp)
+    # for titleNo in titleNos:
+    logger.info("#####：%s" % titleNo)
+    resp = appTitleInfo2(titleNo)
+    if resp:
+        datas.append(resp)
     for title in datas:
         logger.info("@@@@@：%s" % title["title"])
         if title["serviceStatus"] == "SERVICE":
@@ -626,7 +623,6 @@ def queryComment(parentids):
         checkV1CommentGet(id)
 
 
-
 def getFormateTime():
     time_now = datetime.datetime.now()
     otherStyleTime = time_now.strftime(" %Y-%m-%d %H:%M:%S ")
@@ -638,14 +634,20 @@ def UnnormalTest():
 
 
 if __name__ == "__main__":
-    logger.info("\n"*10)
-    logger.info("*"*100)
-    titleNos = [423,1419,918,1428]
-    # titleNos = [1428]
-    parentids = getParentsId(titleNos)
-    likeComplaint(parentids)
-    queryComment(parentids)
-    login(Config("mobile"), Config("passwd"), loginType="PHONE_NUMBER")
-    #删除所有评论
-    deleteAllComments()
-    logger.info("*"*100)
+    # logger.info("\n"*10)
+    # logger.info("*"*100)
+    # titleNos = [423,1419,918,1428]
+    # # titleNos = [1419]
+    # for titleNo in titleNos:
+    #     login(Config("mobile"), Config("passwd"), loginType="PHONE_NUMBER")
+    #     parentids = getParentsId(titleNos)
+    #     if parentids:
+    #         likeComplaint(parentids)
+    #         queryComment(parentids)
+    #         login(Config("mobile"), Config("passwd"), loginType="PHONE_NUMBER")
+    #         #删除所有评论
+    #         deleteAllComments()
+    #         logger.info("*"*100)
+
+    # login(Config("email"),Config("passwd"),Config("loginType"))
+    pass

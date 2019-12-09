@@ -1001,7 +1001,7 @@ def appEpisodeListV3(titleNo):
     try:
         resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
         result = resp.json()["message"]["result"]["episodeList"]
-        logger.info(resp.url)
+        # logger.info(resp.url)
         return result
     except Exception:
         logger.error(resp.url)

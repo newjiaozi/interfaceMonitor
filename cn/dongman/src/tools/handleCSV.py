@@ -2,6 +2,8 @@ import pandas
 import csv,codecs
 from cn.dm.src.tools.getMongodb import *
 from cn.dm.src.interface import *
+import os
+
 
 
 jmeterpath = "/Users/dongman/Documents/jmeters/data"

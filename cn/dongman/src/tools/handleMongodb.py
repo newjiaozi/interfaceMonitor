@@ -1,12 +1,10 @@
 from pymongo import MongoClient,DESCENDING,ASCENDING
-from bson.objectid import ObjectId
 from cn.dongman.src.tools.logger import logger
-
+from bson.objectid import ObjectId
 
 
 def getMongodbConnect():
     client = MongoClient('s-2ze2526365b24054.mongodb.rds.aliyuncs.com',3717)
-    # client = MongoClient(host = ["s-2ze2526365b24054.mongodb.rds.aliyuncs.com","s-2zedb55fb34d0124.mongodb.rds.aliyuncs.com"],port = 3717)
     db = client["admin"]
     db.authenticate(name="root",password="dmdb2016qgHk")
     return client,db
@@ -79,20 +77,46 @@ def getReplyLikeCount(dbname,objectId):
         result.append(i)
     return result
 
-
 def getCommentCount(dbname,objectId):
     comm = dbname.get_collection("comment")
     res = comm.count_documents({"objectId":objectId})
     return res
 
+def editComment(dbname,id,replyCount,likeCount):
+    comm = dbname.get_collection("comment")
+    comm.update_one({"_id":ObjectId(id)},{"$set":{"replyCount":replyCount,"likeCount":likeCount}})
 
-if __name__ == "__main__":
-    # print(getAllIDByNeoId(db))
-    # logger.info(client.list_database_names())
-    objectId = "w_762_4"
+def editReply(dbname,id,likeCount):
+    reply = dbname.get_collection("comment_reply")
+    reply.update_one({"_id": ObjectId(id)}, {"$set": {"likeCount": likeCount}})
+
+
+def testEdit():
+    commentId = ["5dedb74c38197e76fadb660f","5dedb7559106f47711ad7995"]
+    replyId = ["5dedb74d598cd9770f816d37","5dedb756598cd9770f816d3d"]
+
     client,db = getMongodbConnect()
     dbname = client["qadmcomment"]
-    print(getCommentCount(dbname,objectId))
+
+    for i in commentId:
+        editComment(dbname,i,626,626)
+    for i in replyId:
+        editReply(dbname,i,626)
+
+
+if __name__ == "__main__":
+
+
+    commentId = ["5dedb74c38197e76fadb660f","5dedb7559106f47711ad7995"]
+    replyId = ["5dedb74d598cd9770f816d37","5dedb756598cd9770f816d3d"]
+
+    client,db = getMongodbConnect()
+    dbname = client["qadmcomment"]
+
+    for i in commentId:
+        editComment(dbname,i,626,626)
+    for i in replyId:
+        editReply(dbname,i,626)
 
 
 

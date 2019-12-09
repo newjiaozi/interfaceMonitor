@@ -9,7 +9,7 @@ import configparser
 import faker
 from collections import OrderedDict
 from cn.dongman.src.tools.handleSqlite import getConfig as gc,updateConfig
-
+import os
 
 f = faker.Faker()
 
@@ -21,8 +21,9 @@ def getIPV4():
 
 
 def getConfig(section,option,ini="config.ini"):
+    ini_path = os.path.join(os.path.dirname(__file__), ini)
     conf = configparser.ConfigParser(dict_type=OrderedDict)
-    conf.read(ini)
+    conf.read(ini_path)
     if conf.has_option(section,option):
         return conf.get(section,option)
 
@@ -59,7 +60,7 @@ def Config(key,section="headers"):
     config = {"headers":{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8",
                          "HOST":host,
                          "Accept-Language":"zh-CN",
-                         "x-Forwarded-For":getIPV4(),
+                         # "x-Forwarded-For":getIPV4(),
                          # "uuid":getUUID(),
                          "user-agent":userAgent
                          },
@@ -138,23 +139,22 @@ def login(username,passwd,loginType="EMAIL"): ##PHONE_NUMBER
     ne = appRsakeyGet()
     if ne:
         try:
+            logger.info("%s--%s" % (username,passwd))
             encpw = rsaEnc(ne[2], ne[1], ne[3], mobile=username, passwd=passwd)
             encnm = ne[0]
             plus = {"loginType":loginType,"encnm":encnm,"encpw":encpw,"v":1}
             plus.update(Config("baseparams"))
             resp = requests.post(Config("httphost")+path,headers=Config("headers"),data=plus,params= getExpiresMd5(path))
             resp_json = resp.json()
-            logger.info(resp.url)
             neo_ses = resp_json["message"]["result"]["ses"]
             neo_id = resp_json["message"]["result"]["id_no"]
-            updateConfig("neo_ses",neo_ses)
-            updateConfig("neo_id",neo_id)
-            return neo_ses,resp_json["message"]["result"]["idNo"]
+            return neo_ses,neo_id
         except Exception:
             logger.exception("login出现异常")
             logger.error(resp.url)
             logger.error(resp.text)
-            # logger.error(resp.headers)
+            logger.error(resp.request.body)
+            logger.error(resp.headers)
             return False
     else:
         return False
