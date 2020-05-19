@@ -26,7 +26,7 @@ def getString(r,key):
 def setHash(r,name,key,value):
     try:
         res = r.hset(name,key,value)
-        logger.info("setHash成功 %s：%s：%s" % (name,key,value))
+        # logger.info("setHash成功 %s：%s：%s" % (name,key,value))
         return res
     except Exception:
         logger.exception("setHash发生异常 %s：%s：%s" % (name,key,value))
@@ -73,3 +73,45 @@ def deleteCommentRedis(r):
         logger.info("redis删除成功 %s" % k)
     else:
         logger.info("没有匹配到需要删除的redis")
+
+def setCommentCount(r,viewerType,titleNo,episodeNo,imageNo=[],count=0):
+    if viewerType == "CUT":
+        for i in imageNo:
+            setHash(r,"image_comment_count","%s-%s-%s" % (titleNo,episodeNo,i),count)
+            setHash(r,"image_comment_reply_count","%s-%s-%s" % (titleNo,episodeNo,i),count)
+    setHash(r,"episode_comment_count","%s-%s" % (titleNo,episodeNo),count)
+    setHash(r,"episode_comment_reply_count","%s-%s" % (titleNo,episodeNo),count)
+
+
+def setLikeItCount(r,titleNo,episodeNo,count=0):
+    setHash(r,"title_like_count","%s" % titleNo,count)
+    setHash(r,"episode_like_count","%s-%s" % (titleNo,episodeNo),count)
+
+
+
+
+def deleteCommentLimitRedis(r):
+    pattern = "comment_frequency_*_*"
+    k = r.keys(pattern=pattern)
+    if k:
+        r.delete(*k)
+        # logger.info("redis删除成功 %s" % k)
+    else:
+        logger.info("没有匹配到需要删除的redis")
+
+
+
+if __name__ == "__main__":
+    r = connectRedis()
+    ###cut
+    imageTitleNo = 1467
+    imageEpisodeNo = 1
+    imageNo = 1
+    ##cut
+    # setHash(r,"image_comment_count","%s-%s-%s" % (imageTitleNo,imageEpisodeNo,imageNo),"0")
+    # setHash(r,"image_comment_reply_count","%s-%s-%s" % (imageTitleNo,imageEpisodeNo,imageNo),"0")
+    # setHash(r,"episode_comment_count","%s-%s" % (imageTitleNo,imageEpisodeNo),"0")
+    # setHash(r,"episode_comment_reply_count","%s-%s" % (imageTitleNo,imageEpisodeNo),"0")
+    # setLikeItCount(r,imageTitleNo,imageEpisodeNo,count=1000)
+    # setLikeItCount(r,423,1,count=1000)
+    deleteCommentLimitRedis(r)

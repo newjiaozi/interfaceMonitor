@@ -1,7 +1,5 @@
 import pandas
 import csv,codecs
-from cn.dm.src.tools.getMongodb import *
-from cn.dm.src.interface import *
 import os
 
 
@@ -30,15 +28,43 @@ def writeCsvByCsvStr(data,csvpath):
         writer.writerow([i])
 
 
-if __name__ == "__main__":
+# 以map的方式读csv
+def read_dict_csv(csv_file):
+    with open(csv_file) as f:
+        # 定义key
+        field_names = ['id', 'name']
+        # 写入数据
+        reader = csv.DictReader(f, fieldnames=field_names)
+        for row in reader:
+            # print(row)
+            print(row['name'])
 
-    client,dbname = getConnect()
+
+def read_csv(csv_file):
+    with open(csv_file) as f:
+        reader = csv.reader(f)
+        row_list = []
+        for row in reader:
+            row_list.append(row)
+        return row_list
+
+
+def write_csv(data,csv_file):
+    with open(csv_file,"w") as f:
+        writer = csv.writer(f)
+        for row in data:
+            writer.writerow(row)
+
+
+if __name__ == "__main__":
+    pass
+    # client,dbname = getConnect()
     # residParent = getAllReply(dbname)
     # print("开始写入评论数据到csv")
     # writeCsvByCsv(residParent,csvParpath)
     # print("评论ID和parentid写入csv完成")
-    res = getAllIDByNeoId(dbname)
-    writeCsvByCsvStr(res,csvpath)
+    # res = getAllIDByNeoId(dbname)
+    # writeCsvByCsvStr(res,csvpath)
 
 
 

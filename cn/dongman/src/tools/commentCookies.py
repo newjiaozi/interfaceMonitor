@@ -37,11 +37,22 @@ def v1Comment(titleNo,episodeNo,cookies,categoryImage="",categoryId="",imageNo="
     payload.update(Config("baseparams"))
     try:
         resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=cookies)
-        logger.info(resp.url)
-        result = resp.json()
-        return result
+        if resp.ok:
+            result = resp.json()
+            return result
+        else:
+            logger.error(resp.url)
+            logger.error(resp.request.body)
+            logger.error(resp.text)
+            logger.error(resp.status_code)
+            logger.error(resp.headers)
+            logger.error(resp.request.headers)
+
     except Exception:
         logger.exception("v1Comment出现异常")
+        logger.error(resp.text)
+        logger.error(resp.request.body)
+        logger.error(resp.status_code)
 
 
 ### 发表回复
@@ -66,10 +77,10 @@ def v1CommentReply(parentId,titleNo,episodeNo,cookies,text=""):
     payload.update(Config("baseparams"))
     try:
         resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=cookies)
-        logger.info(resp.url)
         result = resp.json()
         return result
     except Exception:
+        logger.info(resp.url)
         logger.exception("v1CommentReply发生异常")
 
 
@@ -85,11 +96,10 @@ def postV1CommentLike(id,titleNo,episodeNo,cookies,flag="like"):
     payload.update(Config("baseparams"))
     try:
         resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=cookies)
-        logger.info(resp.url)
-
         result = resp.json()
         return result
     except Exception:
+        logger.info(resp.url)
         logger.exception("postV1CommentLike发生异常")
 
 def postV1CommentReplyLike(id,titleNo,episodeNo,cookies,flag="like"):
@@ -103,15 +113,14 @@ def postV1CommentReplyLike(id,titleNo,episodeNo,cookies,flag="like"):
     payload.update(Config("baseparams"))
     try:
         resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=cookies)
-        logger.info(resp.url)
-
         result = resp.json()
         return result
     except Exception:
+        logger.info(resp.url)
         logger.exception("vpostV1CommentReplyLike发生异常")
 
 
-def v2Comment(titleNo,episodeNo,cookies,imageNo="",pageNo="",sortBy="",limit=""):
+def v2Comment(titleNo,episodeNo,cookies,imageNo="",pageNo="",sortBy="favorite",limit=""):
     path = "/v2/comment"
     payload = {"titleNo":titleNo,
                "episodeNo":episodeNo,
@@ -123,12 +132,12 @@ def v2Comment(titleNo,episodeNo,cookies,imageNo="",pageNo="",sortBy="",limit="")
     payload.update(getExpiresMd5(path))
     try:
         resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=cookies)
-        logger.info(resp.url)
         if resp.ok:
             result = resp.json()
             if result["code"] == 200:
                 return result
     except Exception:
+        logger.info(resp.url)
         logger.exception("v2Comment发生异常")
 
 def v1CommentImageCount(titleNo,episodeNo,ids):
@@ -141,12 +150,12 @@ def v1CommentImageCount(titleNo,episodeNo,ids):
     payload.update(getExpiresMd5(path))
     try:
         resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
-        logger.info(resp.url)
         if resp.ok:
             result = resp.json()
             if result["code"] == 200:
                 return result
     except Exception:
+        logger.info(resp.url)
         logger.exception("v1CommentImageCountt发生异常")
 
 
@@ -162,11 +171,9 @@ def v1CommentReplyGet(commentId,pageNo=1,limit=10):
     payload.update(getExpiresMd5(path))
     try:
         resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
-        logger.info(resp.url)
-
+        # logger.info(resp.url)
         result = resp.json()
         if result["code"] == 200:
-
             # logger.info(result['data']["commentReplyList"][0].keys())
             return result
     except Exception:
@@ -202,6 +209,29 @@ def deleteCommentReply(cookies,id):
             assert result["message"] == "请求成功！"
     except Exception:
         logger.exception("deleteCommentReply发生异常")
+
+
+##举报评论
+def commentComplaint(cookies,id):
+    path = "/v1/comment/%s/complaint" % id
+    try:
+        resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),headers=Config("headers"),cookies=cookies)
+        # logger.info(resp.url)
+        result = resp.json()
+        return result
+    except Exception:
+        logger.exception("commentComplaint发生异常")
+
+##举报回复
+def replyComplaint(cookies,id):
+    path = "/v1/comment_reply/%s/complaint" % id
+    try:
+        resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),headers=Config("headers"),cookies=cookies)
+        # logger.info(resp.url)
+        result = resp.json()
+        return result
+    except Exception:
+        logger.exception("replyComplaint发生异常")
 
 
 if __name__ == "__main__":

@@ -53,15 +53,10 @@ def Config(key,section="headers"):
     loginType = getConfig(section,"loginType")
     env = getConfig(section,"env")
     userAgent = getConfig(section,"userAgent")
-    # ipv4 = getConfig("ip","ipv4",ini="session.ini")
-    # ipv4 = getIPV4
-
 
     config = {"headers":{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8",
                          "HOST":host,
                          "Accept-Language":"zh-CN",
-                         # "x-Forwarded-For":getIPV4(),
-                         # "uuid":getUUID(),
                          "user-agent":userAgent
                          },
               "httphost":httphost,

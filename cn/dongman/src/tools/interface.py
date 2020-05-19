@@ -763,7 +763,6 @@ def getAllTitleEpisode(platform):
     cursor.close()
     return title_episode
 
-
 def deleteRedis(neo_id):
     # curTime = time.localtime()
     # str_timeB = str(curTime.tm_year)+str(curTime.tm_mon)+str(curTime.tm_mday)
@@ -887,7 +886,7 @@ def appEpisodeInfoV3(titleNo,episodeNo,purchase=0,v=10):
     try:
         resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
         result = resp.json()["message"]["result"]["episodeInfo"]
-        logger.info(resp.url)
+        # logger.info(resp.url)
         # logger.info(result)
         return result
     except Exception:
@@ -1238,6 +1237,24 @@ def testingConfigInfo(version="2.2.4"):
         return False
 
 
+def saveNickname(cookies,nickname):
+    path = "/app/member/save"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    payload.update({"birthday":"2012 . 02 . 22","gender":"G","nickname":"✅%s" % nickname })
+    try:
+        resp = requests.get(Config("httphost")+ path, params=payload, headers=Config("headers"),cookies=cookies)
+        if resp.ok:
+            logger.info(resp.text)
+            return resp.json()
+    except Exception:
+        logger.error(resp.url)
+        return False
+
+
+
+
+
 if __name__=="__main__":
     pass
     # login("13683581996","1988oooo")
@@ -1307,12 +1324,13 @@ if __name__=="__main__":
     # transArgs(1)
     # print(appClientVersion(),type(appClientVersion()))
     # print(v1TitleEpisodeLikeCount(1268,[76,75,74,72,73]))
-    trueCount = 0
-    totalCount = 1000
-    for i in range(0,totalCount):
-        res = testingConfigInfo("2.2.4")
-        if res:
-            trueCount+=1
-    print("执行%s次，返回true %s次" % (totalCount,trueCount))
+    # trueCount = 0
+    # totalCount = 1000
+    # for i in range(0,totalCount):
+    #     res = testingConfigInfo("2.2.4")
+    #     if res:
+    #         trueCount+=1
+    # print("执行%s次，返回true %s次" % (totalCount,trueCount))
     # testingConfigInfo()
     # print(appHome4())
+    appEpisodeInfoV3(1464,1)

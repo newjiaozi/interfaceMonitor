@@ -4,17 +4,17 @@ from cn.dongman.src.tools.login import login
 from cn.dongman.src.tools.handleRedis import *
 from cn.dongman.src.tools.handleMongodb import testEdit
 import redis
-import time
+
+
+
 
 def deleteRedis():
-    # curTime = time.localtime()
-    # str_timeB = str(curTime.tm_year)+str(curTime.tm_mon)+str(curTime.tm_mday)
     r = redis.Redis(host='r-2ze7889e17a315d4.redis.rds.aliyuncs.com', port=6379, password='dmred2017qUsa', db="0",decode_responses=True)
     pattern = "comment_frequency_*_*"
     k = r.keys(pattern=pattern)
     if k:
         r.delete(*k)
-        logger.info("redis删除成功 %s" % k)
+        # logger.info("redis删除成功 %s" % k)
     else:
         logger.info("没有匹配到需要删除的redis")
 
@@ -111,8 +111,8 @@ def checkV1CommentImageCount(result,id=""):
 
 def assertV2Comment(titleNo,episodeNo,cookies,categoryId="",showTotalCount=0,count=0,likeCount=0,replyCount=0):
     if categoryId:  ##cut
-        dataV2CommentImageNo = v2Comment(titleNo, episodeNo, cookies, imageNo=categoryId)
-        dataV2Comment = v2Comment(titleNo, episodeNo, cookies)
+        dataV2CommentImageNo = v2Comment(titleNo, episodeNo, cookies, imageNo=categoryId,sortBy="favorite")
+        dataV2Comment = v2Comment(titleNo, episodeNo, cookies,sortBy="favorite")
         dataV1CommentImageCount = v1CommentImageCount(titleNo, episodeNo, ids=categoryId)
 
         ###

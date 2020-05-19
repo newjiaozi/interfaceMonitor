@@ -104,21 +104,41 @@ def testEdit():
         editReply(dbname,i,626)
 
 
+def deleteCommentDB(dbname,titleNo):
+    comm = dbname.get_collection("comment")
+    res = comm.delete_many({"titleNo":str(titleNo)} )
+    # logger.info("删除comment数据%s个" % res.deleted_count)
+
+
+
+def deleteReplyDB(dbname,titleNo):
+    comm = dbname.get_collection("comment_reply")
+    res = comm.delete_many({"titleNo":str(titleNo)} )
+    # logger.info("删除comment_reply数据%s个" % res.deleted_count)
+
+
+def deletelikeItDB(dbname,titleNo):
+    comm = dbname.get_collection("episode_likeit_history")
+    res = comm.delete_many({"titleNo":str(titleNo)} )
+    # logger.info("删除episode_likeit_history数据%s个" % res.deleted_count)
+
+
 if __name__ == "__main__":
 
 
-    commentId = ["5dedb74c38197e76fadb660f","5dedb7559106f47711ad7995"]
-    replyId = ["5dedb74d598cd9770f816d37","5dedb756598cd9770f816d3d"]
-
+    # commentId = ["5dedb74c38197e76fadb660f","5dedb7559106f47711ad7995"]
+    # replyId = ["5dedb74d598cd9770f816d37","5dedb756598cd9770f816d3d"]
+    #
     client,db = getMongodbConnect()
     dbname = client["qadmcomment"]
+    #
+    # for i in commentId:
+    #     editComment(dbname,i,626,626)
+    # for i in replyId:
+    #     editReply(dbname,i,626)
 
-    for i in commentId:
-        editComment(dbname,i,626,626)
-    for i in replyId:
-        editReply(dbname,i,626)
-
-
+    deleteComment(dbname,1467)
+    deleteReply(dbname,1467)
 
 
 

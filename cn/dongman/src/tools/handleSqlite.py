@@ -89,7 +89,7 @@ def getMobileNeoidNeoses(cursor,mobile):
 
 if __name__ == "__main__":
     pass
-    createConfig()
+    # createConfig()
     # conn,cursor = getCursor()
     # insertConfig(cursor,"ipv4","000")
     # insertConfig(cursor, "neo_id", "000")
